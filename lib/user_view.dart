@@ -28,6 +28,26 @@ class _UserViewState extends State<UserView> {
     });
   }
 
+  Future<void> _updateUser({
+    String? name,
+    String? age,
+    String? path,
+  }) async {
+    await _users.doc(path).update({"Name": name, "Age": age}).then((value) {
+      debugPrint("User updated");
+    }).then((error) {
+      debugPrint("$error");
+    });
+  }
+
+  Future<void> _deleteUser(String path) async {
+    await _users.doc(path).delete().then((value) {
+      debugPrint("User deleted");
+    }).then((error) {
+      debugPrint("$error");
+    });
+  }
+
   //One time read
   void _getUsersOneTime() async {
     _users.get().then((value) {
@@ -156,34 +176,72 @@ class _UserViewState extends State<UserView> {
                               borderRadius: BorderRadius.circular(5),
                             ),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                CircleAvatar(
-                                  child: Text("${index + 1}"),
-                                ),
-                                kWidth,
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text("Name"),
-                                    Text("Age"),
-                                  ],
-                                ),
-                                kWidth,
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text(":"),
-                                    Text(":"),
-                                  ],
-                                ),
-                                kWidth,
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                Row(
                                   children: [
-                                    Text(data["Name"]),
-                                    Text(data["Age"]),
+                                    CircleAvatar(
+                                      child: Text("${index + 1}"),
+                                    ),
+                                    kWidth,
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: const [
+                                        Text("Name"),
+                                        Text("Age"),
+                                      ],
+                                    ),
+                                    kWidth,
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: const [
+                                        Text(":"),
+                                        Text(":"),
+                                      ],
+                                    ),
+                                    kWidth,
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(data["Name"]),
+                                        Text(data["Age"]),
+                                      ],
+                                    ),
                                   ],
                                 ),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                            builder: (context) {
+                                              return EditPage(
+                                                name: data["Name"],
+                                                age: data["Age"],
+                                                path: snapshot.data!.docs
+                                                    .elementAt(index)
+                                                    .id,
+                                                updateUser: _updateUser,
+                                              );
+                                            },
+                                          ));
+                                        },
+                                        icon: Icon(Icons.edit,
+                                            color: Colors.grey.shade700)),
+                                    IconButton(
+                                        onPressed: () {
+                                          _deleteUser(snapshot.data!.docs
+                                              .elementAt(index)
+                                              .id);
+                                        },
+                                        icon: Icon(Icons.delete,
+                                            color: Colors.grey.shade700)),
+                                  ],
+                                )
                               ],
                             ),
                           );
@@ -194,5 +252,106 @@ class _UserViewState extends State<UserView> {
         ),
       ),
     );
+  }
+}
+
+class EditPage extends StatefulWidget {
+  final String? name;
+  final String? age;
+  final String? path;
+  final Future<void> Function({String name, String age, String path})?
+      updateUser;
+  const EditPage({Key? key, this.name, this.age, this.path, this.updateUser})
+      : super(key: key);
+
+  @override
+  State<EditPage> createState() => _EditPageState();
+}
+
+class _EditPageState extends State<EditPage> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+
+  @override
+  void initState() {
+    _nameController.text = widget.name!;
+    _ageController.text = widget.age!;
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _ageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text("Update User"),
+        ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+                margin: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(5)),
+                child: TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 15),
+                    hintText: "Name",
+                    border: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                  ),
+                )),
+            Container(
+                margin: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(5)),
+                child: TextFormField(
+                  controller: _ageController,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 15),
+                    hintText: "Age",
+                    border: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                  ),
+                )),
+            Padding(
+              padding: const EdgeInsets.all(15),
+              child: ElevatedButton(
+                  onPressed: () async {
+                    if (_nameController.text.isEmpty ||
+                        _ageController.text.isEmpty) {
+                      SnackBar snackBar = const SnackBar(
+                          content: Text("Name & Age cannot be empty"));
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    } else {
+                      widget.updateUser!(
+                              name: _nameController.text,
+                              age: _ageController.text,
+                              path: widget.path!)
+                          .then((value) => Navigator.of(context).pop());
+                    }
+                  },
+                  child: const Text("Update User")),
+            )
+          ],
+        ));
   }
 }
