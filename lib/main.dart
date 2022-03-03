@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_firebase_samples/user_auth_email_password.dart';
 import 'package:flutter_firebase_samples/user_view.dart';
 
 void main() async {
@@ -54,6 +55,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     ));
                   },
                   child: const Text("Users")),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) {
+                        return const UserAuthEmailPasswordView();
+                      },
+                    ));
+                  },
+                  child: const Text("Authentication")),
             )
           ],
         ),
