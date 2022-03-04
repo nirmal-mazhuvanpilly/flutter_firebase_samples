@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_firebase_samples/cloud_messaging_view.dart';
+import 'package:flutter_firebase_samples/dynamic_link_view.dart';
 import 'package:flutter_firebase_samples/remote_config_view.dart';
 import 'package:flutter_firebase_samples/user_auth_email_password.dart';
 import 'package:flutter_firebase_samples/user_view.dart';
@@ -93,6 +94,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     ));
                   },
                   child: const Text("Remote Config")),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) {
+                        return const DynamicLinkView();
+                      },
+                    ));
+                  },
+                  child: const Text("Dynamic Links")),
             )
           ],
         ),
